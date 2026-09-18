@@ -4,7 +4,7 @@ const path = require('path');
 
 const app = express();
 
-const MC_HOST = '127.0.0.1';
+const MC_HOST = 'e-server-mc.duckdns.org';
 const MC_PORT = 25565;
 
 app.use(express.json());
