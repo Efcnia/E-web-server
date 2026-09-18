@@ -1,0 +1,13 @@
+{
+  "name": "mc-status",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.22.3",
+    "firebase": "^12.19.0",
+    "minecraft-server-util": "^5.4.4"
+  }
+}

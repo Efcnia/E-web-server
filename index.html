@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Status serwera Minecraft</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1e1e2e;
+    font-family: sans-serif;
+  }
+  #statusText { font-size: 4em; font-weight: bold; }
+  .online { color: #4ade80; }
+  .offline { color: #f87171; }
+
+  #authButtons { position: fixed; top: 20px; left: 20px; display: flex; gap: 12px; z-index: 1000; }
+  #authButtons button {
+    padding: 16px 32px; font-size: 18px; border: none; border-radius: 20px;
+    cursor: pointer; font-weight: bold;
+  }
+  #btnOpenRegister { background: #4caf50; color: white; }
+  #btnOpenLogin { background: #2196f3; color: white; }
+
+  .modalOverlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    align-items: center; justify-content: center; z-index: 2000;
+  }
+  .modalBox {
+    background: #222; color: white; padding: 24px; border-radius: 16px;
+    width: 300px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .modalBox input { padding: 10px; border-radius: 8px; border: none; }
+  .modalBox button { padding: 12px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; }
+  .closeModal { align-self: flex-end; cursor: pointer; }
+
+  #playersPanel { position: fixed; top: 20px; right: 20px; display: none; }
+  #toggleBtn { padding: 8px 16px; border-radius: 8px; border: none; background: #3b3b52; color: white; cursor: pointer; font-size: 1em; }
+  #playerListDropdown { display: none; list-style: none; margin: 8px 0 0; padding: 12px; background: #2a2a3d; border-radius: 8px; min-width: 150px; }
+</style>
+</head>
+<body>
+
+  <div id="authButtons">
+    <button id="btnOpenRegister">Rejestracja</button>
+    <button id="btnOpenLogin">Logowanie</button>
+  </div>
+
+  <div id="userInfo" style="position:fixed; top:80px; left:20px; z-index:1000; color:white;"></div>
+
+  <div class="modalOverlay" id="registerModal">
+    <div class="modalBox">
+      <span class="closeModal" data-close="registerModal">✕</span>
+      <h3>Rejestracja</h3>
+      <button id="btnGoogle" style="background:#ea4335;color:white;">Rejestracja przez Google</button>
+      <input id="regNick" placeholder="Nick">
+      <input id="regEmail" type="email" placeholder="Email">
+      <input id="regPassword" type="password" placeholder="Hasło">
+      <button id="btnRegister" style="background:#4caf50;color:white;">Zarejestruj</button>
+    </div>
+  </div>
+
+  <div class="modalOverlay" id="loginModal">
+    <div class="modalBox">
+      <span class="closeModal" data-close="loginModal">✕</span>
+      <h3>Logowanie</h3>
+      <input id="loginNick" placeholder="Nick">
+      <input id="loginPassword" type="password" placeholder="Hasło">
+      <button id="btnLogin" style="background:#2196f3;color:white;">Zaloguj</button>
+    </div>
+  </div>
+
+  <div id="playersPanel">
+    <button id="toggleBtn">Gracze (<span id="playerCount">0</span>)</button>
+    <ul id="playerListDropdown"></ul>
+  </div>
+
+  <div id="statusText">Sprawdzanie...</div>
+
+  <script>
+    const panel = document.getElementById('playersPanel');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const dropdown = document.getElementById('playerListDropdown');
+
+    toggleBtn.addEventListener('click', () => {
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/status');
+        const data = await res.json();
+        const el = document.getElementById('statusText');
+
+        if (data.online) {
+          el.textContent = 'ONLINE';
+          el.className = 'online';
+          panel.style.display = 'block';
+          document.getElementById('playerCount').textContent = data.players.online;
+          dropdown.innerHTML = data.players.list.length
+            ? data.players.list.map(name => '<li style="padding:4px 0;">' + name + '</li>').join('')
+            : '<li style="color:#888;">Brak graczy online</li>';
+        } else {
+          el.textContent = 'OFFLINE';
+          el.className = 'offline';
+          panel.style.display = 'none';
+        }
+      } catch (e) {
+        document.getElementById('statusText').textContent = 'BŁĄD';
+        panel.style.display = 'none';
+      }
+    }
+
+    fetchStatus();
+    setInterval(fetchStatus, 10000);
+  </script>
+
+  <script type="module" src="logowanie.js"></script>
+</body>
+</html>
