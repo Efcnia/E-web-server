@@ -59,18 +59,40 @@ document.getElementById("btnRegister").onclick = async () => {
 document.getElementById("btnLogin").onclick = async () => {
   const nick = document.getElementById("loginNick").value;
   const password = document.getElementById("loginPassword").value;
+  const remember = document.getElementById("rememberDevice").checked;
   if (!nick || !password) return alert("Uzupełnij wszystkie pola");
 
   const res = await fetch("/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nick, password })
+    body: JSON.stringify({ nick, password, remember })
   });
   const data = await res.json();
   if (data.ok) {
     document.getElementById("userInfo").textContent = "Zalogowano: " + nick;
+    if (remember && data.token) {
+      localStorage.setItem("rememberToken", data.token);
+    }
     closeModal("loginModal");
   } else {
     alert(data.error);
   }
 };
+
+// Sprawdzenie przy wejściu na stronę, czy to zapamiętane urządzenie
+(async () => {
+  const token = localStorage.getItem("rememberToken");
+  if (!token) return;
+
+  const res = await fetch("/remember-check", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    document.getElementById("userInfo").textContent = "Zalogowano: " + data.nick;
+  } else {
+    localStorage.removeItem("rememberToken");
+  }
+})();
